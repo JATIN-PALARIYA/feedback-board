@@ -1,20 +1,38 @@
 import mongoose from "mongoose";
 
-const Reply = new mongoose.Schema({
-    feedbackId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Feedback',
-        required: true
+const ReplySchema = new mongoose.Schema({
+  feedbackId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Feedback",
+    required: true,
+  },
+  parentReplyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Reply",
+    default: null, // null if it's a top-level reply
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  author: {
+    type: String,
+    default: "Anonymous",
+  },
+  upvotes: {
+    type: Number,
+    default: 0,
+  },
+  upvotedBy: [
+    {
+      type: String, // store user ID or name if needed
     },
-    parentReplyId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Reply'
-    },
-    message: {
-        type: String,
-        required: true
-    },
-    createdAt: { type: Date, "default": Date.now }
-})
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-export default mongoose.models.Reply || mongoose.model("Reply", Reply);
+const Reply = mongoose.models.Reply || mongoose.model("Reply", ReplySchema);
+export default Reply;

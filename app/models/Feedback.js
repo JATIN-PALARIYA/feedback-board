@@ -1,13 +1,16 @@
 import mongoose from "mongoose";
 
-const Feedback = new mongoose.Schema({
-    title: String,
-    description: String,
-    createdAt: { type: Date, "default": Date.now },
-    votes: {
-        up: { type: Number, "default": 0 },
-        down: { type: Number, "default": 0 }
-    }
+const FeedbackSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  tags: [{ type: String }],                // e.g., ["UI", "Bug"]
+  status: { type: String, default: "Under Review" }, // e.g., Planned, Completed, In Progress
+  upvotes: { type: Number, default: 0 },
+  upvotedBy: [{ type: String }],           // Optional: to prevent multiple upvotes by same user
+  comments: { type: Number, default: 0 },  // Optional: auto updated count
+  author: { type: String, default: "Anonymous" },
+  createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.models.Feedback || mongoose.model("Feedback", Feedback);
+const Feedback = mongoose.models.Feedback || mongoose.model("Feedback", FeedbackSchema);
+export default Feedback;
