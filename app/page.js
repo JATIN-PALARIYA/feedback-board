@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import FeedbackList from './components/FeedbackList';
 import FeedbackDetails from './components/FeedbackDetails';
-import { User, Plus, MessageSquare, ArrowUp } from 'lucide-react';
+import { User, Plus } from 'lucide-react';
 
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,7 +12,28 @@ export default function Page() {
   const [currentView, setCurrentView] = useState('inbox');
   const [selectedFeedback, setSelectedFeedback] = useState(null);
 
-  const allTags = ['UI', 'Bug', 'Feature Request'];
+  const allTags = [
+    // Core Tags
+    'Bug',
+    'Feature Request',
+    'Improvement',
+    'UI',
+    'UX',
+    'Performance',
+    'Accessibility',
+
+    // Other Useful Tags
+    'Dark Mode',
+    'Notifications',
+    'Dashboard',
+    'Comments',
+    'Search',
+    'Authentication',
+    'Onboarding',
+    'Settings',
+    'Navigation',
+    'Forms',
+    'API'];
 
   const dummyFeedback = [
     {
@@ -23,17 +44,128 @@ export default function Page() {
       date: 'Aug 6, 2025',
       tags: ['Bug'],
       upvotes: 10,
-      comments: 3
+      comments: 3,
+      status: 'Planned'
     },
     {
       id: 2,
       title: 'Fix button alignment',
-      description: 'It would be great to have a dark theme option for better usability in low-light environments. This would help reduce eye strain during extended usage sessions and provide a more modern interface experience.',
+      description:
+        'It would be great to have a dark theme option for better usability in low-light environments. This would help reduce eye strain during extended usage sessions and provide a more modern interface experience.',
       author: 'Jatin H',
       date: 'Aug 6, 2025',
       tags: ['Bug', 'UI'],
       upvotes: 10,
-      comments: 3
+      comments: 3,
+      status: 'Planned',
+    },
+    {
+      id: 3,
+      title: 'Add dark mode support',
+      description:
+        'Dark mode would be a nice feature to help users with sensitivity to bright light. It should be toggleable from settings.',
+      author: 'Aryan S',
+      date: 'Aug 5, 2025',
+      tags: ['Feature Request', 'UI'],
+      upvotes: 25,
+      comments: 7,
+      status: 'In Progress',
+    },
+    {
+      id: 4,
+      title: 'Improve mobile responsiveness',
+      description:
+        'The app layout breaks on smaller screens. Cards overflow and buttons are too close together. Needs media queries.',
+      author: 'Meera K',
+      date: 'Aug 5, 2025',
+      tags: ['Bug'],
+      upvotes: 15,
+      comments: 4,
+      status: 'High Priority',
+    },
+    {
+      id: 5,
+      title: 'Search bar optimization',
+      description:
+        'The current search feature is slow and sometimes unresponsive. Debounce input and improve the filtering algorithm.',
+      author: 'Ravi G',
+      date: 'Aug 4, 2025',
+      tags: ['Feature Request'],
+      upvotes: 18,
+      comments: 2,
+      status: 'Under Review',
+    },
+    {
+      id: 6,
+      title: 'Add comment edit option',
+      description:
+        'It would be helpful to allow users to edit their comments for typo fixes or clarifications without deleting them.',
+      author: 'Tanya P',
+      date: 'Aug 4, 2025',
+      tags: ['Feature Request', 'UX'],
+      upvotes: 21,
+      comments: 6,
+      status: 'Planned',
+    },
+    {
+      id: 7,
+      title: 'Fix tag filtering bug',
+      description:
+        'When multiple tags are selected, the filtering doesn’t show the correct results. Possibly a logic issue in AND vs OR filtering.',
+      author: 'Manish V',
+      date: 'Aug 3, 2025',
+      tags: ['Bug'],
+      upvotes: 9,
+      comments: 1,
+      status: 'Critical',
+    },
+    {
+      id: 8,
+      title: 'Add keyboard accessibility',
+      description:
+        'Some interactive components are not accessible via keyboard. Ensure buttons and inputs follow accessibility standards.',
+      author: 'Divya R',
+      date: 'Aug 3, 2025',
+      tags: ['Feature Request', 'Accessibility'],
+      upvotes: 14,
+      comments: 5,
+      status: 'In Progress',
+    },
+    {
+      id: 9,
+      title: 'Notification preferences',
+      description:
+        'Users should be able to choose which types of notifications they receive, such as mentions or replies.',
+      author: 'Rahul N',
+      date: 'Aug 2, 2025',
+      tags: ['Feature Request'],
+      upvotes: 19,
+      comments: 3,
+      status: 'Planned',
+    },
+    {
+      id: 10,
+      title: 'Fix layout issue on Safari',
+      description:
+        'UI components appear misaligned on Safari browser due to flexbox inconsistencies. Needs browser-specific handling.',
+      author: 'Anjali T',
+      date: 'Aug 2, 2025',
+      tags: ['Bug', 'UI'],
+      upvotes: 8,
+      comments: 2,
+      status: 'Under Review',
+    },
+    {
+      id: 11,
+      title: 'Add voting cooldown',
+      description:
+        'To prevent spamming, users should only be able to vote once every few seconds. This needs rate limiting.',
+      author: 'Sahil P',
+      date: 'Aug 1, 2025',
+      tags: ['Feature Request'],
+      upvotes: 17,
+      comments: 4,
+      status: 'Planned',
     }
   ];
 

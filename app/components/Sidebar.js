@@ -38,13 +38,13 @@ export default function Sidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search feedback..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 w-full py-2 text-sm rounded-md bg-input-background border border-input text-foreground"
+            className="pl-9 w-full py-2 mt-3 text-sm rounded-md bg-input-background border border-input text-foreground"
           />
         </div>
       </div>
@@ -86,12 +86,12 @@ export default function Sidebar({
       {/* Tags */}
       <div className="flex-1 p-4 overflow-auto">
         <h3 className="text-sm font-medium text-sidebar-foreground mb-3">Filter by Tags</h3>
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-row gap-y-3 gap-x-2 flex-wrap mt-5">
           {allTags.map((tag) => (
             <button
               key={tag}
               onClick={() => toggleTag(tag)}
-              className={`text-xs px-2 py-1 text-primary font-semibold w-fit rounded-full transition ${
+              className={`text-xs px-2 py-1 text-primary font-semibold w-fit rounded-md transition ${
                 selectedTags.includes(tag)
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-sidebar-accent'
