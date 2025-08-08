@@ -1,27 +1,39 @@
 import { connectDB } from "@/app/lib/mongodb";
-import Feedback from "@/app/models/Feedback"
+import { getAllFeedback } from "./utils/getAllFeedback";
+import { createFeedback } from "./utils/createFeedback";
 
-export async function POST(request) {
-  try {
+export async function GET() {
     await connectDB();
 
-    const { title, description } = await request.json();
+    const result = await getAllFeedback();
 
-    if (!title || !description) {
-      return Response.json(
-        { success: false, error: 'Title and description are required' },
-        { status: 400 }
-      );
+    if (result.success) {
+        return new Response(JSON.stringify(result), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } else {
+        return new Response(JSON.stringify(result), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
+}
 
-    const newFeedback = await Feedback.create({ title, description });
+export async function POST(request) {
+    await connectDB();
+    const body = await request.json();
+    const result = await createFeedback(body);
 
-    return Response.json({ success: true, data: newFeedback }, { status: 201 });
-  } catch (error) {
-    console.error("Feedback POST error:", error);
-    return Response.json(
-      { success: false, error: 'Internal Server Error' },
-      { status: 500 }
-    );
-  }
+    if (result.success) {
+        return new Response(JSON.stringify(result), {
+            status: 201,
+            headers: { "Content-Type": "application/json" },
+        });
+    } else {
+        return new Response(JSON.stringify(result), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
 }

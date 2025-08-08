@@ -1,16 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-let isConnected = false; // Track the connection status
+let isConnected = false;
 
 export async function connectDB() {
-  if (isConnected) return;
+  if (isConnected) {
+    return;
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    isConnected = true;
+    return;
+  }
 
   try {
-    const db = await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: process.env.MONGODB_DB || "myDatabase",
+    });
+
     isConnected = true;
-    console.log('✅ MongoDB connected');
+    console.log("✅ MongoDB connected");
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    throw new Error('Failed to connect to MongoDB');
+    console.error("❌ MongoDB connection error:", error);
+    throw new Error("Failed to connect to MongoDB");
   }
 }

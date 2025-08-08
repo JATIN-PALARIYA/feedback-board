@@ -10,14 +10,14 @@ export default function FeedbackDetails() {
             <div className="p-6 border-b border-border space-y-4">
                 {/* Title and Status */}
                 <div className="flex justify-between items-start">
-                    <h1 className="text-xl font-medium text-foreground">
+                    <h1 className="text-2xl font-medium text-foreground">
                         Feedback Title Goes Here
                     </h1>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 border rounded-full text-secondary border-secondary">
+                        <span className="text-xs px-2 py-1 border rounded-full text-primary font-semibold border-secondary">
                             Status
                         </span>
-                        <button className="text-xs px-3 py-1 border rounded hover:bg-muted transition text-muted-foreground">
+                        <button className="text-sm px-3 py-1 border rounded hover:bg-muted transition text-primary font-semibold">
                             <Archive className="w-4 h-4 inline mr-1" />
                             Archive
                         </button>
@@ -25,7 +25,7 @@ export default function FeedbackDetails() {
                 </div>
 
                 {/* Author and Date */}
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 text-base text-muted-foreground">
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span>Author Name</span>
@@ -38,17 +38,17 @@ export default function FeedbackDetails() {
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
-                    <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">UI</span>
-                    <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Bug</span>
+                    <span className="text-xs border border-muted text-primary px-2 py-0.5 rounded-md">UI</span>
+                    <span className="text-xs border border-muted text-primary px-2 py-0.5 rounded-md">Bug</span>
                 </div>
 
                 {/* Upvote and Comments */}
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 px-3 py-1 rounded border text-sm text-muted-foreground hover:bg-muted">
+                    <button className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm text-primary hover:bg-muted">
                         <ArrowUp className="w-4 h-4" />
                         12
                     </button>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1 text-sm text-primary">
                         <MessageCircle className="w-4 h-4" />
                         4 Replies
                     </div>
@@ -59,7 +59,7 @@ export default function FeedbackDetails() {
             <div className="flex-1 overflow-auto p-6 space-y-10">
                 {/* Description */}
                 <div>
-                    <h2 className="text-base font-medium mb-2">Description</h2>
+                    <h2 className="text-xl font-medium mb-2">Description</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                         This is a sample description for the selected feedback item.
                     </p>
@@ -67,28 +67,35 @@ export default function FeedbackDetails() {
 
                 {/* Discussion Section */}
                 <div className="space-y-6">
-                    <h2 className="text-base font-medium">Discussion (2)</h2>
+                    <h2 className="text-lg font-medium">Discussion (2)</h2>
 
                     {/* Individual Reply (repeat this block) */}
                     <div className="border p-4 rounded-lg space-y-2">
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <User className="w-4 h-4" />
-                            <span className="font-medium text-foreground">Commenter Name</span>
-                            <span>•</span>
-                            <span>Aug 7</span>
+                        <div className="flex items-start gap-3">
+                            {/* Avatar */}
+                            <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
+
+                            {/* Name + Date stacked */}
+                            <div className="leading-[1.1]">
+                                <span className="block font-semibold text-primary">Commenter Name</span>
+                                <span className="text-xs text-muted-foreground">Aug 7</span>
+                            </div>
                         </div>
+
+                        {/* Comment Text */}
                         <p className="text-sm text-foreground">
                             This is a reply comment about the feedback...
                         </p>
                     </div>
 
+
                     {/* Another reply */}
                     <div className="border p-4 rounded-lg space-y-2">
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <User className="w-4 h-4" />
-                            <span className="font-medium text-foreground">Another User</span>
+                            <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
+                            <span className="font-semibold text-primary">Another User</span>
                             <span>•</span>
-                            <span>Aug 6</span>
+                            <span className='text-xs'>Aug 6</span>
                         </div>
                         <p className="text-sm text-foreground">
                             Another opinion or follow-up reply from a different person.
