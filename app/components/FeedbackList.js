@@ -2,26 +2,9 @@
 
 import React from 'react';
 import { MessageCircle, ArrowUp } from 'lucide-react';
+import { getStatusColor } from '../api/feedback/utils/statusColors';
 
 export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSelect }) {
-    const getStatusColor = (status) => {
-        if (!status) return 'text-muted-foreground border-muted';
-        switch (status.toLowerCase()) {
-            case 'high priority':
-            // return 'text'
-            case 'critical':
-                return 'text-white bg-destructive border-destructive';
-            case 'in progress':
-                return 'text-white bg-primary';
-            case 'planned':
-                return 'text-primary bg-secondary border-secondary';
-            case 'under review':
-                return 'text-primary border-secondary';
-            default:
-                return 'text-secondary border-border';
-        }
-    };
-
     return (
         <div className="h-full flex flex-col border-r border-border min-w-[25%] overflow-auto p-2">
             {feedback.length === 0 ? (
@@ -30,13 +13,14 @@ export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSel
                 </div>
             ) : (
                 feedback.map((item) => {
-                    const isSelected = selectedFeedback?.id === item.id;
+                    const isSelected = selectedFeedback?._id === item._id;
+
                     return (
                         <div
-                            key={item.id}
+                            key={item._id}
                             onClick={() => onFeedbackSelect(item)}
                             className={`mb-3 p-4 rounded-xl cursor-pointer min-h-[140px] flex flex-col justify-around transition-all border
-                ${isSelected ? 'border-primary text-primary' : 'hover:bg-muted text-foreground border-border'}`}
+                ${isSelected ? 'border-primary text-primary hover:bg-background' : 'text-foreground border-border hover:bg-muted'}`}
                         >
                             {/* Title + Status */}
                             <div className="flex justify-between items-start mb-2">
@@ -59,14 +43,15 @@ export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSel
 
                             {/* Tags */}
                             <div className="mt-3 flex flex-wrap gap-2">
-                                {item.tags.slice(0, 2).map((tag) => (
+                                {item.tags.slice(0, 2).map((tag, index) => (
                                     <span
-                                        key={tag}
+                                        key={`${item._id}-${tag}-${index}`}
                                         className="text-[11px] text-primary font-semibold px-2 py-0.5 rounded-md border border-accent-foreground"
                                     >
                                         {tag}
                                     </span>
                                 ))}
+
                                 {item.tags.length > 2 && (
                                     <span className="text-[11px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                                         +{item.tags.length - 2}
@@ -74,14 +59,16 @@ export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSel
                                 )}
                             </div>
 
-                            {/* Footer: Author & Date (left), Vote & Comment (right) */}
+                            {/* Footer */}
                             <div className="mt-4 flex justify-between items-center text-xs text-muted-foreground">
                                 <div>
-                                    by {item.author} •{' '}
-                                    {new Date(item.date).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric'
-                                    })}
+                                    {item.author} •{' '}
+                                    {new Date(item.createdAt).toLocaleDateString('en-US',
+                                        {
+                                            day: 'numeric',
+                                            month: 'short'
+                                        }
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1">

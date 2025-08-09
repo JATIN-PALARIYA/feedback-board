@@ -2,8 +2,17 @@
 
 import React from 'react';
 import { ArrowUp, MessageCircle, User, Archive, Clock } from 'lucide-react';
+import { getStatusColor } from '../api/feedback/utils/statusColors';
 
-export default function FeedbackDetails() {
+export default function FeedbackDetails({ selectedFeedback }) {
+    if (!selectedFeedback) {
+        return (
+            <div className="h-full flex items-center justify-center text-muted-foreground">
+                Please select a feedback from the list
+            </div>
+        );
+    }
+
     return (
         <div className="h-full flex flex-col">
             {/* Top Header Section */}
@@ -11,12 +20,18 @@ export default function FeedbackDetails() {
                 {/* Title and Status */}
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-medium text-foreground">
-                        Feedback Title Goes Here
+                        {selectedFeedback.title}
                     </h1>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 border rounded-full text-primary font-semibold border-secondary">
-                            Status
-                        </span>
+                    <div className="flex items-center gap-3">
+                        {selectedFeedback.status && (
+                            <span
+                                className={`text-xs px-2 py-1 border rounded-md text-primary font-semibold ${getStatusColor(
+                                    selectedFeedback.status
+                                )}`}
+                            >
+                                {selectedFeedback.status}
+                            </span>
+                        )}
                         <button className="text-sm px-3 py-1 border rounded hover:bg-muted transition text-primary font-semibold">
                             <Archive className="w-4 h-4 inline mr-1" />
                             Archive
@@ -28,29 +43,43 @@ export default function FeedbackDetails() {
                 <div className="flex items-center gap-4 text-base text-muted-foreground">
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        <span>Author Name</span>
+                        <span>{selectedFeedback.author}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span>Aug 7, 2025</span>
+                        <span className='text-sm'>
+                            {new Date(selectedFeedback.createdAt).toLocaleDateString('en-US',
+                                {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                }
+                            )}
+                        </span>
                     </div>
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
-                    <span className="text-xs border border-muted text-primary px-2 py-0.5 rounded-md">UI</span>
-                    <span className="text-xs border border-muted text-primary px-2 py-0.5 rounded-md">Bug</span>
+                    {selectedFeedback.tags?.map((tag, index) => (
+                        <span
+                            key={`${selectedFeedback._id}-tag-${index}`}
+                            className="text-xs border border-border text-primary font-semibold px-2 py-0.5 rounded-md"
+                        >
+                            {tag}
+                        </span>
+                    ))}
                 </div>
 
                 {/* Upvote and Comments */}
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm text-primary hover:bg-muted">
+                    <button className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm font-semibold text-primary hover:bg-muted">
                         <ArrowUp className="w-4 h-4" />
-                        12
+                        {selectedFeedback.upvotes ?? 0}
                     </button>
                     <div className="flex items-center gap-1 text-sm text-primary">
                         <MessageCircle className="w-4 h-4" />
-                        4 Replies
+                        {selectedFeedback.comments ?? 0} Replies
                     </div>
                 </div>
             </div>
@@ -61,59 +90,51 @@ export default function FeedbackDetails() {
                 <div>
                     <h2 className="text-xl font-medium mb-2">Description</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        This is a sample description for the selected feedback item.
+                        {selectedFeedback.description}
                     </p>
                 </div>
 
                 {/* Discussion Section */}
                 <div className="space-y-6">
-                    <h2 className="text-lg font-medium">Discussion (2)</h2>
+                    <h2 className="text-lg font-medium">
+                        Discussion ({selectedFeedback.comments ?? 0})
+                    </h2>
 
-                    {/* Individual Reply (repeat this block) */}
-                    <div className="border p-4 rounded-lg space-y-2">
-                        <div className="flex items-start gap-3">
-                            {/* Avatar */}
-                            <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
-
-                            {/* Name + Date stacked */}
-                            <div className="leading-[1.1]">
-                                <span className="block font-semibold text-primary">Commenter Name</span>
-                                <span className="text-xs text-muted-foreground">Aug 7</span>
+                    {/* Dynamic Replies */}
+                    {selectedFeedback.replies?.map((reply, index) => (
+                        <div
+                            key={reply._id || `${selectedFeedback._id}-reply-${index}`}
+                            className="border p-4 rounded-lg space-y-2"
+                        >
+                            <div className="flex items-start gap-3">
+                                <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
+                                <div className="leading-[1.1]">
+                                    <span className="block font-semibold text-primary">
+                                        {reply.author}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {new Date(reply.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
                             </div>
+                            <p className="text-sm text-foreground">{reply.message}</p>
                         </div>
-
-                        {/* Comment Text */}
-                        <p className="text-sm text-foreground">
-                            This is a reply comment about the feedback...
-                        </p>
-                    </div>
-
-
-                    {/* Another reply */}
-                    <div className="border p-4 rounded-lg space-y-2">
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
-                            <span className="font-semibold text-primary">Another User</span>
-                            <span>•</span>
-                            <span className='text-xs'>Aug 6</span>
-                        </div>
-                        <p className="text-sm text-foreground">
-                            Another opinion or follow-up reply from a different person.
-                        </p>
-                    </div>
+                    ))}
                 </div>
 
                 {/* Reply Box */}
-                <div className="space-y-3">
+                <div className="space-y-3 border border-border px-5 py-3 rounded-md">
                     <label className="text-sm font-medium">Add a Reply</label>
-                    <textarea
-                        className="w-full h-24 p-2 border rounded resize-none text-sm text-foreground"
-                        placeholder="Type your reply here..."
-                    ></textarea>
-                    <div className="flex justify-end">
-                        <button className="bg-primary text-white px-4 py-1.5 rounded text-sm hover:opacity-90 transition">
-                            Post Reply
-                        </button>
+                    <div>
+                        <textarea
+                            className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
+                            placeholder="Type your reply here..."
+                        ></textarea>
+                        <div className="flex justify-end">
+                            <button className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition">
+                                Post Reply
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

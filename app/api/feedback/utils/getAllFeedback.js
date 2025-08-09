@@ -15,7 +15,8 @@ export async function getAllFeedback() {
                 let repliesCount = 0;
                 try {
                     repliesCount = await Reply.countDocuments({ feedbackId: fb._id });
-                } catch (err) {
+                }
+                catch (err) {
                     console.warn(`Could not count replies for feedback ${fb._id}:`, err);
                 }
                 return {

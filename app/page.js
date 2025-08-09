@@ -10,10 +10,11 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [currentView, setCurrentView] = useState('inbox');
-  const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [feedbackList, setFeedbackList] = useState([]);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [loadingList, setLoadingList] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const allTags = [
     'Bug', 'Feature Request', 'Improvement', 'UI', 'UX', 'Performance', 'Accessibility',
@@ -21,30 +22,62 @@ export default function Page() {
     'Authentication', 'Onboarding', 'Settings', 'Navigation', 'Forms', 'API'
   ];
 
-  const handleCreateFeedback = () => {
-    console.log('Open create feedback modal');
-  };
-
+  // Load feedback list summaries on mount
   useEffect(() => {
     async function fetchFeedbacks() {
-      setLoading(true);
+      setLoadingList(true);
+      setError(null);
       try {
         const res = await fetch('/api/feedback');
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok && data.success) {
           setFeedbackList(data.data || []);
         } else {
-          setError(data.error || 'Failed to fetch feedback');
+          setError(data.error || 'Failed to fetch feedback list');
         }
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setLoadingList(false);
       }
     }
-
     fetchFeedbacks();
   }, []);
+
+  // Fetch full feedback + replies when selectedFeedback changes (only if id is new)
+  useEffect(() => {
+    async function fetchFeedbackDetails() {
+      if (!selectedFeedback?._id) return;
+      setLoadingDetails(true);
+      setError(null);
+
+      try {
+        const res = await fetch(`/api/feedback/${selectedFeedback._id}`);
+        const json = await res.json();
+        if (res.ok && json.success) {
+          // json.data has { feedback, replies }
+          const fullFeedback = { ...json.data.feedback, replies: json.data.replies };
+          setSelectedFeedback(fullFeedback);
+        } else {
+          setError(json.error || "Failed to fetch feedback details");
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoadingDetails(false);
+      }
+    }
+    fetchFeedbackDetails();
+  }, [selectedFeedback?._id]);
+
+  const handleFeedbackSelect = (feedback) => {
+    // Set selectedFeedback to the summary from the list first
+    setSelectedFeedback(feedback);
+  };
+
+  const handleCreateFeedback = () => {
+    console.log('Open create feedback modal');
+  };
 
   return (
     <div className="flex h-screen">
@@ -83,13 +116,13 @@ export default function Page() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          {loading && <p className="p-4">Loading...</p>}
+          {loadingList && <p className="p-4">Loading feedbacks...</p>}
           {error && <p className="p-4 text-red-500">{error}</p>}
-          {!loading && !error && (
+          {!loadingList && !error && (
             <FeedbackList
               feedback={feedbackList}
               selectedFeedback={selectedFeedback}
-              onFeedbackSelect={setSelectedFeedback}
+              onFeedbackSelect={handleFeedbackSelect}
             />
           )}
         </div>
@@ -97,7 +130,10 @@ export default function Page() {
 
       {/* Feedback Details Column */}
       <div className="flex-1">
-        <FeedbackDetails selectedFeedback={selectedFeedback} />
+        {loadingDetails && <p className="p-4">Loading feedback details...</p>}
+        {!loadingDetails && (
+          <FeedbackDetails selectedFeedback={selectedFeedback} />
+        )}
       </div>
     </div>
   );

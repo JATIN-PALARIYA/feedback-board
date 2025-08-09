@@ -14,7 +14,7 @@ export async function connectDB() {
 
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
-      dbName: process.env.MONGODB_DB || "myDatabase",
+      dbName: process.env.MONGODB_DB || "feedbackApp",
     });
 
     isConnected = true;

@@ -12,10 +12,10 @@ export async function getFeedbackById(id) {
         }
 
         // Get replies for this feedback
-        const replies = await Reply.find({ feedbackId: id }).lean();
+        const replies = await Reply.find({ feedbackId: new mongoose.Types.ObjectId(id) }).lean();
 
         return Response.json(
-            { success: true, data: { ...feedback, replies } },
+            { success: true, data: { ...feedback, reply: replies, comments: replies.length } },
             { status: 200 }
         );
 
