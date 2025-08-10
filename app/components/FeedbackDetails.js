@@ -1,42 +1,52 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUp, MessageCircle, User, Archive, Clock } from 'lucide-react';
 import { getStatusColor } from '../api/feedback/utils/statusColors';
 
-export default function FeedbackDetails({ selectedFeedback }) {
+export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply }) {
     const [replies, setReplies] = useState(selectedFeedback?.replies || []);
-    const [newReply, setNewReply] = useState('')
+    const [newReply, setNewReply] = useState('');
+    const [loadingReply, setLoadingReply] = useState(false);
 
     useEffect(() => {
         setReplies(selectedFeedback?.replies || []);
-    }, [selectedFeedback]);      
+    }, [selectedFeedback]);
 
     async function handleSubmitReply() {
         if (!newReply.trim()) return;
 
+        setLoadingReply(true);
         try {
             const res = await fetch(`/api/feedback/${selectedFeedback._id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: newReply }),
+                body: JSON.stringify({
+                    message: newReply,
+                    author: 'Anonymous', // change to logged-in user if available
+                    createdAt: new Date().toISOString()
+                }),
             });
 
             const json = await res.json();
 
             if (res.ok && json.success) {
-                setReplies(prev => [...prev, json.data]);
-
+                const newReplyObj = json.data.reply; // ✅ actual reply object
+                setReplies(prev => [...prev, newReplyObj]); // add only reply
                 setNewReply('');
-            }
-            else {
-                alert(json.error)
+
+                // ✅ update parent state also
+                if (onNewReply) onNewReply(newReplyObj, json.data.repliesCount);
+            } else {
+                alert(json.error || 'Failed to post reply');
             }
         } catch (error) {
-            alert(json.error)
+            console.error(error);
+            alert('Something went wrong while posting the reply.');
+        } finally {
+            setLoadingReply(false);
         }
     }
-
 
     if (!selectedFeedback) {
         return (
@@ -65,7 +75,7 @@ export default function FeedbackDetails({ selectedFeedback }) {
                                 {selectedFeedback.status}
                             </span>
                         )}
-                        <button className="text-sm px-3 py-1 border rounded hover:bg-muted transition text-primary font-semibold">
+                        <button className="text-sm px-3 py-1 rounded-md hover:bg-muted border border-primary transition text-primary font-semibold">
                             <Archive className="w-4 h-4 inline mr-1" />
                             Archive
                         </button>
@@ -81,13 +91,11 @@ export default function FeedbackDetails({ selectedFeedback }) {
                     <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         <span className='text-sm'>
-                            {new Date(selectedFeedback.createdAt).toLocaleDateString('en-US',
-                                {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                }
-                            )}
+                            {new Date(selectedFeedback.createdAt).toLocaleDateString('en-US', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            })}
                         </span>
                     </div>
                 </div>
@@ -106,13 +114,16 @@ export default function FeedbackDetails({ selectedFeedback }) {
 
                 {/* Upvote and Comments */}
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm font-semibold text-primary hover:bg-muted">
+                    <button
+                        className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm font-semibold text-primary hover:bg-muted"
+                        onClick={onUpVote}
+                    >
                         <ArrowUp className="w-4 h-4" />
                         {selectedFeedback.upvotes ?? 0}
                     </button>
                     <div className="flex items-center gap-1 text-sm text-primary">
                         <MessageCircle className="w-4 h-4" />
-                        {replies.length ?? 0} Replies
+                        {replies.length} Replies
                     </div>
                 </div>
             </div>
@@ -130,7 +141,7 @@ export default function FeedbackDetails({ selectedFeedback }) {
                 {/* Discussion Section */}
                 <div className="space-y-6">
                     <h2 className="text-lg font-medium">
-                        Discussion ({replies.length ?? 0})
+                        Discussion ({replies.length})
                     </h2>
 
                     {/* Dynamic Replies */}
@@ -143,10 +154,10 @@ export default function FeedbackDetails({ selectedFeedback }) {
                                 <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
                                 <div className="leading-[1.1]">
                                     <span className="block font-semibold text-primary">
-                                        {reply.author}
+                                        {reply.author || 'Anonymous'}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                        {new Date(reply.createdAt).toLocaleDateString()}
+                                        {new Date(reply.createdAt || Date.now()).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>
@@ -168,8 +179,10 @@ export default function FeedbackDetails({ selectedFeedback }) {
                         <div className="flex justify-end">
                             <button
                                 onClick={handleSubmitReply}
-                                className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition">
-                                Post Reply
+                                disabled={loadingReply}
+                                className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition"
+                            >
+                                {loadingReply ? 'Posting...' : 'Post Reply'}
                             </button>
                         </div>
                     </div>

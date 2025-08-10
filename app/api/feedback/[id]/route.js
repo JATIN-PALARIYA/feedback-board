@@ -6,14 +6,15 @@ import Reply from "@/app/models/Reply";
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
 
-    const feedback = await Feedback.findById(id);
+    const { id: feedbackId } = await params; 
+
+    const feedback = await Feedback.findById(feedbackId);
     if (!feedback) {
       return NextResponse.json({ success: false, error: "Feedback not found" }, { status: 404 });
     }
 
-    const replies = await Reply.find({ feedbackId: id }).sort({ createdAt: 1 });
+    const replies = await Reply.find({ feedbackId }).sort({ createdAt: 1 });
 
     return NextResponse.json({
       success: true,

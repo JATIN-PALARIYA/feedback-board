@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Search, Inbox, Archive, MessageSquare, Plus, X } from 'lucide-react';
 
 export default function Sidebar({
@@ -53,13 +54,14 @@ export default function Sidebar({
 
       {/* Create Feedback Button */}
       <div className="p-4 border-b border-sidebar-border">
-        <button
+        <Link
           onClick={onCreateFeedback}
+          href="/feedback/new"
           className="w-full flex items-center gap-2 text-sm h-9 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition"
         >
           <Plus className="h-4 w-4" />
           New Feedback
-        </button>
+        </Link>
       </div>
 
       {/* Navigation */}
@@ -72,11 +74,10 @@ export default function Sidebar({
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center text-primary font-semibold gap-2 text-sm h-9 px-3 py-2 rounded-md transition ${
-                isActive
+              className={`w-full flex items-center text-primary font-semibold gap-2 text-sm h-9 px-3 py-2 rounded-md transition ${isActive
                   ? 'bg-secondary text-secondary-foreground'
                   : 'hover:bg-muted text-muted-foreground'
-              }`}
+                }`}
             >
               <Icon className="h-4 w-4" />
               {item.label}
@@ -93,11 +94,10 @@ export default function Sidebar({
             <button
               key={tag}
               onClick={() => toggleTag(tag)}
-              className={`text-xs px-2 py-1 text-primary font-semibold w-fit rounded-md transition ${
-                selectedTags.includes(tag)
+              className={`text-xs px-2 py-1 text-primary font-semibold w-fit rounded-md transition ${selectedTags.includes(tag)
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-sidebar-accent'
-              }`}
+                }`}
             >
               {tag}
             </button>

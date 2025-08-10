@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Sidebar from './components/Sidebar';
 import FeedbackList from './components/FeedbackList';
 import FeedbackDetails from './components/FeedbackDetails';
@@ -44,7 +45,7 @@ export default function Page() {
     fetchFeedbacks();
   }, []);
 
-  // Fetch full feedback + replies when selectedFeedback changes (only if id is new)
+  // Fetch full feedback + replies when selectedFeedback changes
   useEffect(() => {
     async function fetchFeedbackDetails() {
       if (!selectedFeedback?._id) return;
@@ -55,9 +56,10 @@ export default function Page() {
         const res = await fetch(`/api/feedback/${selectedFeedback._id}`);
         const json = await res.json();
         if (res.ok && json.success) {
-          // json.data has { feedback, replies }
-          const fullFeedback = { ...json.data.feedback, replies: json.data.replies };
-          setSelectedFeedback(fullFeedback);
+          setSelectedFeedback({
+            ...json.data.feedback,
+            replies: json.data.replies
+          });
         } else {
           setError(json.error || "Failed to fetch feedback details");
         }
@@ -70,6 +72,7 @@ export default function Page() {
     fetchFeedbackDetails();
   }, [selectedFeedback?._id]);
 
+  // Refetch list on filters change
   useEffect(() => {
     async function fetchFilteredFeedbacks() {
       setLoadingList(true);
@@ -82,7 +85,6 @@ export default function Page() {
         if (currentView) params.append('view', currentView);
 
         const res = await fetch(`/api/feedback?${params.toString()}`);
-
         const json = await res.json();
 
         if (res.ok && json.success) {
@@ -94,7 +96,7 @@ export default function Page() {
       }
       catch (err) {
         setError(err.message || 'Unexpected error');
-      } 
+      }
       finally {
         setLoadingList(false);
       }
@@ -103,9 +105,58 @@ export default function Page() {
     fetchFilteredFeedbacks()
   }, [searchQuery, selectedTags, currentView])
 
+  async function onUpVote(feedbackId) {
+    try {
+      const res = await fetch(`/api/feedback/${feedbackId}/upvote`, {
+        method: 'PATCH',
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        const updatedFeedback = json.data;
+
+        setFeedbackList(prevList =>
+          prevList.map(feedback =>
+            feedback._id === updatedFeedback._id
+              ? { ...feedback, upvotes: updatedFeedback.upvotes }
+              : feedback
+          )
+        );
+
+        if (selectedFeedback?._id === updatedFeedback._id) {
+          setSelectedFeedback(prev => ({
+            ...prev,
+            upvotes: updatedFeedback.upvotes,
+            replies: prev.replies || [],
+            comments: prev.comments ?? 0
+          }));
+        }
+      } else {
+        alert(json.error);
+      }
+    } catch (error) {
+      alert('Something went wrong');
+    }
+  }
+
+  function handleNewReply(newReply) {
+    setSelectedFeedback(prev => ({
+      ...prev,
+      replies: [...(prev.replies || []), newReply]
+    }));
+
+    setFeedbackList(prevList =>
+      prevList.map(item =>
+        item._id === selectedFeedback._id
+          ? { ...item, comments: (item.comments || 0) + 1 }
+          : item
+      )
+    );
+  }
+
 
   const handleFeedbackSelect = (feedback) => {
-    // Set selectedFeedback to the summary from the list first
     setSelectedFeedback(feedback);
   };
 
@@ -139,13 +190,14 @@ export default function Page() {
               Sign In
             </button>
 
-            <button
+            <Link
               onClick={handleCreateFeedback}
+              href="/feedback/new"
               className="flex items-center gap-1 bg-primary text-white font-semibold px-3 py-2 rounded-md text-xs hover:opacity-90 transition"
             >
               <Plus className="h-4 w-4" />
               New
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -157,6 +209,7 @@ export default function Page() {
               feedback={feedbackList}
               selectedFeedback={selectedFeedback}
               onFeedbackSelect={handleFeedbackSelect}
+              onUpVote={onUpVote}
             />
           )}
         </div>
@@ -166,7 +219,12 @@ export default function Page() {
       <div className="flex-1">
         {loadingDetails && <p className="p-4">Loading feedback details...</p>}
         {!loadingDetails && (
-          <FeedbackDetails selectedFeedback={selectedFeedback} />
+          <FeedbackDetails
+            selectedFeedback={selectedFeedback}
+            upvotes={selectedFeedback?.upvotes}
+            onUpVote={() => onUpVote(selectedFeedback._id)}
+            onNewReply={handleNewReply}
+          />
         )}
       </div>
     </div>

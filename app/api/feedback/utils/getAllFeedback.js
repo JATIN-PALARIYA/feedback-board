@@ -24,7 +24,7 @@ export async function getAllFeedback(search, tags, view) {
             query.archived = true;
         }
 
-        const feedbacks = await Feedback.find(query).lean();
+        const feedbacks = await Feedback.find(query).sort({ date: -1, _id: -1 }).lean();
 
         if (!feedbacks.length) {
             return { success: true, data: [] };
@@ -33,9 +33,9 @@ export async function getAllFeedback(search, tags, view) {
 
         const feedbackWithCounts = await Promise.all(
             feedbacks.map(async (fb) => {
-                let repliesCount = 0;
+                let comments = 0;
                 try {
-                    repliesCount = await Reply.countDocuments({ feedbackId: fb._id });
+                    comments = await Reply.countDocuments({ feedbackId: fb._id });
                 }
                 catch (err) {
                     console.warn(`Could not count replies for feedback ${fb._id}:`, err);
@@ -43,7 +43,7 @@ export async function getAllFeedback(search, tags, view) {
                 return {
                     ...fb,
                     _id: fb._id.toString(),
-                    repliesCount,
+                    comments,
                 };
             })
         );

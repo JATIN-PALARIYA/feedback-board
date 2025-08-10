@@ -33,6 +33,7 @@ export async function GET(request) {
 export async function POST(request) {
     await connectDB();
     const body = await request.json();
+    console.log("Received body:", body);
     const result = await createFeedback(body);
 
     if (result.success) {
@@ -42,8 +43,9 @@ export async function POST(request) {
         });
     } else {
         return new Response(JSON.stringify(result), {
-            status: 500,
+            status: 400, // or 500 depending on error type
             headers: { "Content-Type": "application/json" },
         });
     }
 }
+

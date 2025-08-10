@@ -1,39 +1,27 @@
-import Feedback from "@/app/models/Feedback";
+import Feedback from '@/app/models/Feedback';
 
 export async function createFeedback(body) {
     try {
         const { title, description, author, tags, status } = body;
 
-        // Validation
         if (!title || !description) {
-            return Response.json(
-                { success: false, error: "Title and description are required" },
-                { status: 400 }
-            );
+            return { success: false, error: "Title and description are required" };
         }
 
-        // Create new feedback
         const newFeedback = await Feedback.create({
             title,
             description,
-            author: author || "Anonymous", // fallback if no author passed
+            author: author || "Anonymous",
             tags: Array.isArray(tags) ? tags : [],
-            status: status || "Planned",    // default status
+            status: status || "Planned",
             date: new Date(),
             upvotes: 0,
-            comments: 0
+            comments: 0,
         });
 
-        return Response.json(
-            { success: true, data: newFeedback },
-            { status: 201 }
-        );
-
+        return { success: true, data: newFeedback };
     } catch (error) {
         console.error("Create Feedback error:", error);
-        return Response.json(
-            { success: false, error: "Internal Server Error" },
-            { status: 500 }
-        );
+        return { success: false, error: "Internal Server Error" };
     }
 }

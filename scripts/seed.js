@@ -45,8 +45,8 @@ async function seedData() {
         status: statuses[Math.floor(Math.random() * statuses.length)]
       });
 
-      // Random 0–5 replies
-      const replyCount = Math.floor(Math.random() * 6);
+      // Random 2–5 replies
+      const replyCount = Math.floor(Math.random() * 8);
       let repliesCreated = 0;
 
       for (let j = 0; j < replyCount; j++) {
