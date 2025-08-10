@@ -1,10 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { ArrowUp, MessageCircle, User, Archive, Clock } from 'lucide-react';
 import { getStatusColor } from '../api/feedback/utils/statusColors';
 
 export default function FeedbackDetails({ selectedFeedback }) {
+    const [replies, setReplies] = useState(selectedFeedback?.replies || []);
+    const [newReply, setNewReply] = useState('')
+
+    useEffect(() => {
+        setReplies(selectedFeedback?.replies || []);
+    }, [selectedFeedback]);      
+
+    async function handleSubmitReply() {
+        if (!newReply.trim()) return;
+
+        try {
+            const res = await fetch(`/api/feedback/${selectedFeedback._id}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: newReply }),
+            });
+
+            const json = await res.json();
+
+            if (res.ok && json.success) {
+                setReplies(prev => [...prev, json.data]);
+
+                setNewReply('');
+            }
+            else {
+                alert(json.error)
+            }
+        } catch (error) {
+            alert(json.error)
+        }
+    }
+
+
     if (!selectedFeedback) {
         return (
             <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -79,7 +112,7 @@ export default function FeedbackDetails({ selectedFeedback }) {
                     </button>
                     <div className="flex items-center gap-1 text-sm text-primary">
                         <MessageCircle className="w-4 h-4" />
-                        {selectedFeedback.comments ?? 0} Replies
+                        {replies.length ?? 0} Replies
                     </div>
                 </div>
             </div>
@@ -97,11 +130,11 @@ export default function FeedbackDetails({ selectedFeedback }) {
                 {/* Discussion Section */}
                 <div className="space-y-6">
                     <h2 className="text-lg font-medium">
-                        Discussion ({selectedFeedback.comments ?? 0})
+                        Discussion ({replies.length ?? 0})
                     </h2>
 
                     {/* Dynamic Replies */}
-                    {selectedFeedback.replies?.map((reply, index) => (
+                    {replies.map((reply, index) => (
                         <div
                             key={reply._id || `${selectedFeedback._id}-reply-${index}`}
                             className="border p-4 rounded-lg space-y-2"
@@ -129,9 +162,13 @@ export default function FeedbackDetails({ selectedFeedback }) {
                         <textarea
                             className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
                             placeholder="Type your reply here..."
+                            value={newReply}
+                            onChange={(e) => setNewReply(e.target.value)}
                         ></textarea>
                         <div className="flex justify-end">
-                            <button className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition">
+                            <button
+                                onClick={handleSubmitReply}
+                                className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition">
                                 Post Reply
                             </button>
                         </div>

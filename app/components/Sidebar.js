@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Inbox, Archive, MessageSquare, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Inbox, Archive, MessageSquare, Plus, X } from 'lucide-react';
 
 export default function Sidebar({
   searchQuery,
@@ -38,13 +37,16 @@ export default function Sidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 mt-2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-8 -translate-y-1/2 size-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search feedback..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 w-full py-2 mt-3 text-sm rounded-md bg-input-background border border-input text-foreground"
+          />
+          <X className='absolute right-3 bottom-2 size-5 text-muted-foreground'
+            onClick={() => onSearchChange('')}
           />
         </div>
       </div>

@@ -70,6 +70,40 @@ export default function Page() {
     fetchFeedbackDetails();
   }, [selectedFeedback?._id]);
 
+  useEffect(() => {
+    async function fetchFilteredFeedbacks() {
+      setLoadingList(true);
+      setError(null)
+
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('search', searchQuery);
+        if (selectedTags.length > 0) params.append('tags', selectedTags.join(','));
+        if (currentView) params.append('view', currentView);
+
+        const res = await fetch(`/api/feedback?${params.toString()}`);
+
+        const json = await res.json();
+
+        if (res.ok && json.success) {
+          setFeedbackList(json.data || []);
+        }
+        else {
+          setError(json.error || 'Failed to fetch feedback');
+        }
+      }
+      catch (err) {
+        setError(err.message || 'Unexpected error');
+      } 
+      finally {
+        setLoadingList(false);
+      }
+    }
+
+    fetchFilteredFeedbacks()
+  }, [searchQuery, selectedTags, currentView])
+
+
   const handleFeedbackSelect = (feedback) => {
     // Set selectedFeedback to the summary from the list first
     setSelectedFeedback(feedback);

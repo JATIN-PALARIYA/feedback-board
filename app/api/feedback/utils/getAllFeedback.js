@@ -2,13 +2,34 @@
 import Feedback from "@/app/models/Feedback";
 import Reply from "@/app/models/Reply";
 
-export async function getAllFeedback() {
+export async function getAllFeedback(search, tags, view) {
     try {
-        const feedbacks = await Feedback.find({}).lean();
+        const query = {};
+
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } },
+                { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
+            ];
+        }
+
+        if (tags && tags.length > 0) {
+            query.tags = { $in: tags };
+        }
+
+        if (view === 'inbox') {
+            query.archived = { $ne: true };
+        } else if (view === 'archives') {
+            query.archived = true;
+        }
+
+        const feedbacks = await Feedback.find(query).lean();
 
         if (!feedbacks.length) {
             return { success: true, data: [] };
         }
+
 
         const feedbackWithCounts = await Promise.all(
             feedbacks.map(async (fb) => {

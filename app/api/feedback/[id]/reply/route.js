@@ -1,5 +1,6 @@
 import { connectDB } from "@/app/lib/mongodb";
 import Reply from "@/app/models/Reply";
+import { NextResponse } from "next/server";
 
 export async function POST(request, { params }) {
     try {
@@ -8,7 +9,7 @@ export async function POST(request, { params }) {
         const { message, parentReplyId } = await request.json();
 
         if (!message) {
-            return Response.json({ success: false, error: "Message is required" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "Message is required" }, { status: 400 });
         }
 
         const reply = await Reply.create({
@@ -17,9 +18,9 @@ export async function POST(request, { params }) {
             parentReplyId: parentReplyId || null
         });
 
-        return Response.json({ success: true, data: reply }, { status: 201 });
+        return NextResponse.json({ success: true, data: reply }, { status: 201 });
     } catch (error) {
         console.error("Reply POST error:", error);
-        return Response.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
