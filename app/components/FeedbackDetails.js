@@ -29,10 +29,12 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
             });
 
             const json = await res.json();
+            console.log('Reply POST response:', json);
+
 
             if (res.ok && json.success) {
-                const newReplyObj = json.data.reply; // ✅ actual reply object
-                setReplies(prev => [...prev, newReplyObj]); // add only reply
+                const newReplyObj = json.data.reply; 
+                setReplies(prev => [...prev, newReplyObj]); 
                 setNewReply('');
 
                 // ✅ update parent state also

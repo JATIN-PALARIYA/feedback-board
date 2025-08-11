@@ -87,7 +87,7 @@ export default function Sidebar({
       </div>
 
       {/* Tags */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex-1 p-4 overflow-y-auto">
         <h3 className="text-sm font-medium text-sidebar-foreground mb-3">Filter by Tags</h3>
         <div className="flex flex-row gap-y-3 gap-x-2 flex-wrap mt-5">
           {allTags.map((tag) => (
