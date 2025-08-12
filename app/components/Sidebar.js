@@ -38,7 +38,7 @@ export default function Sidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-8 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-8 -translate-y-1/2 size-4 text-muted-foreground cursor-pointer" />
           <input
             type="text"
             placeholder="Search feedback..."
@@ -46,10 +46,14 @@ export default function Sidebar({
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 w-full py-2 mt-3 text-sm rounded-md bg-input-background border border-input text-foreground"
           />
-          <X className='absolute right-3 bottom-2 size-5 text-muted-foreground'
-            onClick={() => onSearchChange('')}
-          />
+          {searchQuery && (
+            <X
+              className="absolute right-3 bottom-2 size-5 text-muted-foreground cursor-pointer"
+              onClick={() => onSearchChange('')}
+            />
+          )}
         </div>
+
       </div>
 
       {/* Create Feedback Button */}
@@ -75,8 +79,8 @@ export default function Sidebar({
               key={item.id}
               onClick={() => onViewChange(item.id)}
               className={`w-full flex items-center text-primary font-semibold gap-2 text-sm h-9 px-3 py-2 rounded-md transition ${isActive
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'hover:bg-muted text-muted-foreground'
+                ? 'bg-secondary text-secondary-foreground'
+                : 'hover:bg-muted text-muted-foreground'
                 }`}
             >
               <Icon className="h-4 w-4" />
@@ -95,8 +99,8 @@ export default function Sidebar({
               key={tag}
               onClick={() => toggleTag(tag)}
               className={`text-xs px-2 py-1 text-primary font-semibold w-fit rounded-md transition ${selectedTags.includes(tag)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-sidebar-accent'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-sidebar-accent'
                 }`}
             >
               {tag}

@@ -1,26 +1,39 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-let isConnected = false;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-export async function connectDB() {
-  if (isConnected) {
-    return;
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+}
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+export default async function connectDB() {
+  if (cached.conn) {
+    return cached.conn;
   }
 
-  if (mongoose.connection.readyState === 1) {
-    isConnected = true;
-    return;
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('✅ Connected to MongoDB');
+      return mongoose;
+    });
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      dbName: process.env.MONGODB_DB || "feedbackApp",
-    });
-
-    isConnected = true;
-    console.log("✅ MongoDB connected");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    throw new Error("Failed to connect to MongoDB");
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
   }
+
+  return cached.conn;
 }

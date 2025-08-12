@@ -1,4 +1,4 @@
-import { connectDB } from "@/app/lib/mongodb";
+import connectDB from "@/app/lib/mongodb";
 import { getAllFeedback } from "./utils/getAllFeedback";
 import { createFeedback } from "./utils/createFeedback";
 import { NextResponse } from "next/server";

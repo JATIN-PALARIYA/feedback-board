@@ -1,32 +1,39 @@
-import dbConnect from '../../../lib/mongodb';
+import connectDB from '../../../lib/mongodb';
 import User from '../../../models/User';
-import { signToken } from '../../../lib/auth';
 
 export async function POST(req) {
-    await dbConnect();
+    await connectDB();
 
     try {
-        const { email, password } = await req.json();
+        const { email, password, name } = await req.json(); // Changed 'username' to 'name' to match frontend
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
+        if (!email || !password || !name) {
+            return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
         }
 
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
-            return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return new Response(JSON.stringify({ error: 'Email already registered' }), { status: 409 });
         }
 
-        const token = signToken({ id: user._id, name: user.name, email: user.email });
-
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: {
-                'Set-Cookie': `user=${JSON.stringify({ name: user.name })}; Path=/; HttpOnly; SameSite=Strict`
-            }
+        const user = new User({
+            username: name,        // Map 'name' from frontend to 'username' in database
+            email: email,
+            passwordHash: password // Map 'password' from frontend to 'passwordHash' in database
         });
+
+        await user.save(); // Fixed: was 'newUser.save()' but variable was named 'user'
+
+        return new Response(JSON.stringify({
+            message: 'User registered successfully',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        }), { status: 201 });
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        console.error('Registration error:', error);
+        return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
     }
 }

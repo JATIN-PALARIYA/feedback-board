@@ -4,12 +4,21 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User } from 'lucide-react';
-import AuthModal from './AuthModal'; // your existing modal (adjust path if needed)
+import AuthForm from './AuthForm';
+import AuthModal from './AuthModal';
 
-export default function AuthManager() {
+export default function AuthManager({ mode = 'modal' }) {
+    // mode: 'modal' (default) or 'page'
+
     const [open, setOpen] = useState(false);
-    const { user, login, logout } = useAuth();
+    const { user, login } = useAuth();
 
+    // If mode is page, just render AuthForm full page
+    if (mode === 'page') {
+        return <AuthForm onAuthSuccess={login} />;
+    }
+
+    // Otherwise modal mode (in-app)
     return (
         <>
             <button
@@ -20,11 +29,16 @@ export default function AuthManager() {
                 {user ? `Welcome, ${user.name}` : 'Sign In'}
             </button>
 
-            <AuthModal
-                isOpen={open}
-                onClose={() => setOpen(false)}
-                onAuthSuccess={(u) => { login(u); setOpen(false); }}
-            />
+            {open && (
+                <AuthModal
+                    isOpen={open}
+                    onClose={() => setOpen(false)}
+                    onAuthSuccess={(u) => {
+                        login(u);
+                        setOpen(false);
+                    }}
+                />
+            )}
         </>
     );
 }

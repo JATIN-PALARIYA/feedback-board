@@ -5,8 +5,9 @@ import Sidebar from '../components/Sidebar';
 import FeedbackListContainer from '../components/FeedbackListContainer';
 import FeedbackDetailsContainer from '../components/FeedbackDetailsContainer';
 import Footer from '../components/Footer';
-import { AuthProvider } from '../context/AuthContext';
+
 import useFeedback from '../hooks/useFeedback';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 export default function Home() {
   // Filters and selected feedback state
@@ -79,7 +80,7 @@ export default function Home() {
   }
 
   return (
-    <AuthProvider>
+    <ProtectedRoute>
       <div className="flex flex-col h-screen">
         <div className="flex flex-1 overflow-hidden">
           <Sidebar
@@ -113,6 +114,6 @@ export default function Home() {
         </div>
         <Footer />
       </div>
-    </AuthProvider>
+    </ProtectedRoute>
   );
 }
