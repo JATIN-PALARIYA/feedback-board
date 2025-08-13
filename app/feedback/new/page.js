@@ -65,7 +65,7 @@ export default function NewFeedbackForm() {
                     description,
                     status,
                     tags: selectedTags,
-                    author: "Anonymous" // change if you have auth
+                    author: "Guest User"
                 }),
             });
 
@@ -75,9 +75,9 @@ export default function NewFeedbackForm() {
                 // Reset form or redirect as needed
                 setTitle('');
                 setDescription('');
-                setStatus('Planned');
+                setStatus('');
                 setSelectedTags([]);
-                router.push('/');
+                router.push('/home');
             } else {
                 setError(json.error || 'Failed to create feedback');
             }

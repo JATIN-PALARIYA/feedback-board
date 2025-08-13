@@ -36,7 +36,11 @@ export default function FeedbackListContainer({
             </div>
 
             <div className="flex-1 overflow-auto">
-                {loadingList && <p className="p-4">Loading feedbacks...</p>}
+                {loadingList && (
+                    <div className="flex items-center justify-center h-full p-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+                    </div>
+                )}
                 {error && <p className="p-4 text-red-500">{error}</p>}
                 {!loadingList && !error && (
                     <FeedbackList

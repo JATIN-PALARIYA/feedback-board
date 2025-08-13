@@ -1,4 +1,3 @@
-// app/context/AuthContext.js
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -7,13 +6,18 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // loading flag
 
   useEffect(() => {
-    // restore stored user if any (you said you want to control persistence separately)
     const raw = localStorage.getItem('user');
     if (raw) {
-      try { setUser(JSON.parse(raw)); } catch { localStorage.removeItem('user'); }
+      try {
+        setUser(JSON.parse(raw));
+      } catch {
+        localStorage.removeItem('user');
+      }
     }
+    setLoading(false); // finished checking
   }, []);
 
   const login = (u, { persist = true } = {}) => {
@@ -27,7 +31,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

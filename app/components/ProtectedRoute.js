@@ -5,20 +5,26 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ children }) {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-        if (!user) {
-            router.push('/auth');  // Redirect if not logged in
+        if (!loading && !user) {
+            router.push('/auth');
         }
-    }, [user, router]);
+    }, [user, loading, router]);
 
-    // Optionally, show nothing or a loading state while checking user
-    if (!user) {
-        return null; // or <div>Loading...</div>
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="h-8 w-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
-    // User is logged in, render protected content
+    if (!user) {
+        return null;
+    }
+
     return <>{children}</>;
 }

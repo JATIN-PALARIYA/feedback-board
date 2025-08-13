@@ -1,4 +1,3 @@
-// app/components/AuthManager.js
 'use client';
 
 import React, { useState } from 'react';
@@ -8,25 +7,28 @@ import AuthForm from './AuthForm';
 import AuthModal from './AuthModal';
 
 export default function AuthManager({ mode = 'modal' }) {
-    // mode: 'modal' (default) or 'page'
-
     const [open, setOpen] = useState(false);
-    const { user, login } = useAuth();
+    const { user, login, loading } = useAuth();
 
-    // If mode is page, just render AuthForm full page
     if (mode === 'page') {
         return <AuthForm onAuthSuccess={login} />;
     }
 
-    // Otherwise modal mode (in-app)
     return (
         <>
             <button
                 onClick={() => setOpen(true)}
                 className="flex items-center gap-1 px-2 py-2 text-xs text-primary font-semibold hover:text-foreground transition"
+                disabled={loading}
             >
-                <User className="h-4 w-4" />
-                {user ? `Welcome, ${user.name}` : 'Sign In'}
+                {loading ? (
+                    <div className="h-4 w-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+                ) : (
+                    <>
+                        <User className="h-4 w-4" />
+                        {user ? `Welcome, ${user.username || 'User'}` : 'Sign In'}
+                    </>
+                )}
             </button>
 
             {open && (

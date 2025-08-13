@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import Loader from './Loader';
 
 export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
     const [isSignUp, setIsSignUp] = useState(true);
@@ -11,7 +12,6 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
     });
     const [error, setError] = useState('');
 
-    // Call your backend register API
     const registerUser = async ({ email, password, name }) => {
         const res = await fetch('/api/auth/register', {
             method: 'POST',
@@ -23,7 +23,6 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
         return data;
     };
 
-    // Call your backend login API
     const loginUser = async ({ email, password }) => {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
@@ -43,7 +42,6 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
         try {
             if (isSignUp) {
                 await registerUser(formData);
-                console.log(formData)
                 alert('Account created! Please login.');
                 setIsSignUp(false);
                 setFormData({ email: '', password: '', name: '' });
@@ -76,6 +74,15 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
             alert('Logged in as Guest');
         }
     };
+
+    // 🔹 Show full-screen loader when loading the entire form
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+                <Loader type="spinner" size={50} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
@@ -121,7 +128,6 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
                             type="email"
                             value={formData.email}
                             onChange={handleInputChange}
-                     
                             placeholder="Enter your email"
                             className="w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
                         />
@@ -153,9 +159,9 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gray-200 text-gray-800 py-3 rounded hover:bg-gray-400 disabled:opacity-50 transition"
+                        className="w-full bg-gray-200 text-gray-800 py-3 rounded hover:bg-gray-400 disabled:opacity-50 transition flex justify-center items-center"
                     >
-                        {loading ? 'Loading...' : isSignUp ? 'Create Account' : 'Log In'}
+                        {loading ? <Loader type="spinner" size={20} /> : isSignUp ? 'Create Account' : 'Log In'}
                     </button>
                 </form>
 

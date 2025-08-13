@@ -4,10 +4,14 @@ import React from 'react';
 import { MessageCircle, ArrowUp } from 'lucide-react';
 import { getStatusColor } from '../api/feedback/utils/statusColors';
 
-export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSelect }) {
+export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSelect, loading }) {
     return (
         <div className="h-full flex flex-col border-r border-border min-w-[25%] overflow-auto p-2">
-            {feedback.length === 0 ? (
+            {loading ? (
+                <div className="flex justify-center items-center h-full">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+            ) : feedback.length === 0 ? (
                 <div className="p-4 text-center text-muted-foreground">
                     No feedback found matching your criteria.
                 </div>
@@ -63,12 +67,10 @@ export default function FeedbackList({ feedback, selectedFeedback, onFeedbackSel
                             <div className="mt-4 flex justify-between items-center text-xs text-muted-foreground">
                                 <div>
                                     {item.author} •{' '}
-                                    {new Date(item.createdAt).toLocaleDateString('en-US',
-                                        {
-                                            day: 'numeric',
-                                            month: 'short'
-                                        }
-                                    )}
+                                    {new Date(item.createdAt).toLocaleDateString('en-US', {
+                                        day: 'numeric',
+                                        month: 'short'
+                                    })}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1">

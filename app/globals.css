@@ -131,6 +131,14 @@
   }
 }
 
+/* Loader Animation */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */

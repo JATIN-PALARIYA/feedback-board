@@ -3,14 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, MessageCircle, User, Archive, Clock } from 'lucide-react';
 import { getStatusColor } from '../api/feedback/utils/statusColors';
+import Loader from './Loader';
 
 export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply }) {
-    const [replies, setReplies] = useState(selectedFeedback?.replies || []);
+    const [replies, setReplies] = useState([]);
     const [newReply, setNewReply] = useState('');
     const [loadingReply, setLoadingReply] = useState(false);
+    const [loadingReplies, setLoadingReplies] = useState(false);
 
+    // No feedback selected
+    if (!selectedFeedback) {
+        return (
+            <div className="h-full flex items-center justify-center text-muted-foreground">
+                Please select a feedback to view details
+            </div>
+        );
+    }
+
+    // Load replies when feedback changes
     useEffect(() => {
-        setReplies(selectedFeedback?.replies || []);
+        if (!selectedFeedback) return;
+
+        setLoadingReplies(true);
+
+        // Simulate API delay for replies loading
+        setTimeout(() => {
+            setReplies(selectedFeedback.replies || []);
+            setLoadingReplies(false);
+        }, 400);
     }, [selectedFeedback]);
 
     async function handleSubmitReply() {
@@ -23,21 +43,16 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: newReply,
-                    author: 'Anonymous', // change to logged-in user if available
+                    author: 'Anonymous',
                     createdAt: new Date().toISOString()
                 }),
             });
 
             const json = await res.json();
-            console.log('Reply POST response:', json);
-
-
             if (res.ok && json.success) {
-                const newReplyObj = json.data.reply; 
-                setReplies(prev => [...prev, newReplyObj]); 
+                const newReplyObj = json.data.reply;
+                setReplies(prev => [...prev, newReplyObj]);
                 setNewReply('');
-
-                // ✅ update parent state also
                 if (onNewReply) onNewReply(newReplyObj, json.data.repliesCount);
             } else {
                 alert(json.error || 'Failed to post reply');
@@ -50,19 +65,10 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
         }
     }
 
-    if (!selectedFeedback) {
-        return (
-            <div className="h-full flex items-center justify-center text-muted-foreground">
-                Please select a feedback from the list
-            </div>
-        );
-    }
-
     return (
         <div className="h-full flex flex-col">
-            {/* Top Header Section */}
+            {/* Top Header */}
             <div className="p-6 border-b border-border space-y-4">
-                {/* Title and Status */}
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-medium text-foreground">
                         {selectedFeedback.title}
@@ -84,7 +90,6 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                     </div>
                 </div>
 
-                {/* Author and Date */}
                 <div className="flex items-center gap-4 text-base text-muted-foreground">
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
@@ -102,7 +107,6 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                     </div>
                 </div>
 
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                     {selectedFeedback.tags?.map((tag, index) => (
                         <span
@@ -114,7 +118,6 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                     ))}
                 </div>
 
-                {/* Upvote and Comments */}
                 <div className="flex items-center gap-4">
                     <button
                         className="flex items-center gap-1 px-3 py-1 rounded-md border text-sm font-semibold text-primary hover:bg-muted"
@@ -130,9 +133,8 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                 </div>
             </div>
 
-            {/* Description and Replies */}
+            {/* Description & Replies */}
             <div className="flex-1 overflow-auto p-6 space-y-10">
-                {/* Description */}
                 <div>
                     <h2 className="text-xl font-medium mb-2">Description</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
@@ -140,53 +142,58 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                     </p>
                 </div>
 
-                {/* Discussion Section */}
                 <div className="space-y-6">
                     <h2 className="text-lg font-medium">
                         Discussion ({replies.length})
                     </h2>
 
-                    {/* Dynamic Replies */}
-                    {replies.map((reply, index) => (
-                        <div
-                            key={reply._id || `${selectedFeedback._id}-reply-${index}`}
-                            className="border p-4 rounded-lg space-y-2"
-                        >
-                            <div className="flex items-start gap-3">
-                                <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
-                                <div className="leading-[1.1]">
-                                    <span className="block font-semibold text-primary">
-                                        {reply.author || 'Anonymous'}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date(reply.createdAt || Date.now()).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            </div>
-                            <p className="text-sm text-foreground">{reply.message}</p>
+                    {loadingReplies ? (
+                        <div className="flex justify-center py-6">
+                            <Loader type="spinner" />
                         </div>
-                    ))}
+                    ) : replies.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No replies yet.</p>
+                    ) : (
+                        replies.map((reply, index) => (
+                            <div
+                                key={reply._id || `${selectedFeedback._id}-reply-${index}`}
+                                className="border p-4 rounded-lg space-y-2"
+                            >
+                                <div className="flex items-start gap-3">
+                                    <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
+                                    <div className="leading-[1.1]">
+                                        <span className="block font-semibold text-primary">
+                                            {reply.author || 'Anonymous'}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(reply.createdAt || Date.now()).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-foreground">{reply.message}</p>
+                            </div>
+                        ))
+                    )}
                 </div>
 
-                {/* Reply Box */}
+                {/* Reply box */}
                 <div className="space-y-3 border border-border px-5 py-3 rounded-md">
                     <label className="text-sm font-medium">Add a Reply</label>
-                    <div>
-                        <textarea
-                            className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
-                            placeholder="Type your reply here..."
-                            value={newReply}
-                            onChange={(e) => setNewReply(e.target.value)}
-                        ></textarea>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleSubmitReply}
-                                disabled={loadingReply}
-                                className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition"
-                            >
-                                {loadingReply ? 'Posting...' : 'Post Reply'}
-                            </button>
-                        </div>
+                    <textarea
+                        className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
+                        placeholder="Type your reply here..."
+                        value={newReply}
+                        onChange={(e) => setNewReply(e.target.value)}
+                    />
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleSubmitReply}
+                            disabled={loadingReply}
+                            className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition flex items-center gap-2"
+                        >
+                            {loadingReply && <Loader size={16} type="spinner" />}
+                            {loadingReply ? 'Posting...' : 'Post Reply'}
+                        </button>
                     </div>
                 </div>
             </div>

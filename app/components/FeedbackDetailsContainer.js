@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import FeedbackDetails from './FeedbackDetails';
+import Loader from './Loader';
 
 export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpVote }) {
     const [data, setData] = useState(null);
@@ -35,10 +36,8 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
         };
     }, [feedbackId]);
 
-    // handleUpVote now checks mounted.current instead of mounted
     const handleUpVote = async () => {
         if (!onUpVote) return;
-
         const updated = await onUpVote(feedbackId);
         if (updated && mounted.current) {
             setData(prev => prev ? { ...prev, upvotes: updated.upvotes } : prev);
@@ -60,7 +59,14 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
         }
     };
 
-    if (loading) return <p className="p-4">Loading feedback details...</p>;
+    if (loading) {
+        return (
+            <div className="p-4">
+                <Loader type="details" />
+            </div>
+        );
+    }
+
     if (error) return <p className="p-4 text-red-500">{error}</p>;
 
     return (
@@ -70,6 +76,5 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
             onUpVote={handleUpVote}
             onNewReply={handleNewReply}
         />
-
     );
 }
