@@ -8,7 +8,7 @@ export async function POST(request, { params }) {
         await connectDB();
 
         const { id: feedbackId } = await params; 
-        const { message, parentReplyId } = await request.json();
+        const { message, parentReplyId, author } = await request.json();
 
         if (!message) {
             return NextResponse.json(
@@ -20,7 +20,8 @@ export async function POST(request, { params }) {
         const reply = await Reply.create({
             feedbackId,
             message,
-            parentReplyId: parentReplyId || null
+            parentReplyId: parentReplyId || null,
+            author
         });
 
         // Get updated replies count

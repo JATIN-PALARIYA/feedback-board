@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 import Loader from './Loader';
@@ -47,7 +49,11 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
                 setFormData({ email: '', password: '', name: '' });
             } else {
                 const { user } = await loginUser(formData);
-                onAuthSuccess?.(user);
+                onAuthSuccess?.({
+                    id: user.id,          
+                    username: user.username,
+                    email: user.email,
+                });
             }
         } catch (err) {
             setError(err.message);
@@ -64,18 +70,16 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
     };
 
     const handleGuestLogin = () => {
-        if (typeof onGuestLogin === 'function') {
-            onGuestLogin({
-                id: 'guest',
-                name: 'Guest User',
-                email: 'guest@example.com'
-            });
-        } else {
-            alert('Logged in as Guest');
-        }
+        const guestUser = {
+            id: 'guest',
+            username: 'Guest',
+            email: '',
+            isGuest: true
+        };
+        if (onGuestLogin) onGuestLogin(guestUser);
+        else alert('Logged in as Guest');
     };
 
-    // 🔹 Show full-screen loader when loading the entire form
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -165,14 +169,12 @@ export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
                     </button>
                 </form>
 
-                {isSignUp && (
-                    <button
-                        onClick={handleGuestLogin}
-                        className="mt-6 w-full max-w-lg mx-auto bg-gray-200 text-gray-800 py-3 rounded hover:bg-gray-400 transition"
-                    >
-                        Continue as Guest
-                    </button>
-                )}
+                <button
+                    onClick={handleGuestLogin}
+                    className="mt-6 w-full max-w-lg mx-auto bg-gray-200 text-gray-800 py-3 rounded hover:bg-gray-400 transition"
+                >
+                    Continue as Guest
+                </button>
 
                 <div className="mt-8 text-center text-sm text-gray-600 max-w-lg mx-auto">
                     {isSignUp ? 'Already have an account? ' : "Don't have an account? "}

@@ -25,7 +25,7 @@ export async function POST(req) {
 
     return new Response(JSON.stringify({
       token,
-      user: { id: user._id, email: user.email, username: user.username }
+      user: { id: user.id, email: user.email, username: user.username }
     }), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });

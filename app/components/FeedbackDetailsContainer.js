@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState, useRef } from 'react';
 import FeedbackDetails from './FeedbackDetails';
 import Loader from './Loader';
@@ -23,7 +25,9 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
                 const res = await fetch(`/api/feedback/${feedbackId}`);
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.error || 'Failed to fetch details');
-                if (mounted.current) setData({ ...json.data.feedback, replies: json.data.replies });
+                if (mounted.current) {
+                    setData({ ...json.data.feedback, replies: json.data.replies });
+                }
             } catch (err) {
                 if (mounted.current) setError(err.message);
             } finally {
@@ -36,44 +40,33 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
         };
     }, [feedbackId]);
 
-    const handleUpVote = async () => {
-        if (!onUpVote) return;
+    const handleUpVoteClick = async () => {
+        if (!feedbackId || !onUpVote) return;
         const updated = await onUpVote(feedbackId);
         if (updated && mounted.current) {
-            setData(prev => prev ? { ...prev, upvotes: updated.upvotes } : prev);
+            setData(prev => prev ? { ...prev, upvotes: updated.upvotes, upvotedBy: updated.upvotedBy } : prev);
         }
     };
 
     const handleNewReply = (newReplyObj, updatedRepliesCount) => {
-        setData(prev => {
-            if (!prev) return prev;
-            return {
-                ...prev,
-                replies: [...prev.replies, newReplyObj],
-                comments: updatedRepliesCount,
-            };
-        });
+        setData(prev => ({
+            ...prev,
+            replies: [...prev.replies, newReplyObj],
+            comments: updatedRepliesCount,
+        }));
 
-        if (onNewReply) {
-            onNewReply(newReplyObj, updatedRepliesCount);
-        }
+        // Call parent function to update feedbackList
+        if (onNewReply) onNewReply(newReplyObj, updatedRepliesCount);
     };
 
-    if (loading) {
-        return (
-            <div className="p-4">
-                <Loader type="details" />
-            </div>
-        );
-    }
 
+    if (loading) return <div className="p-4"><Loader type="details" /></div>;
     if (error) return <p className="p-4 text-red-500">{error}</p>;
 
     return (
         <FeedbackDetails
             selectedFeedback={data}
-            upvotes={data?.upvotes}
-            onUpVote={handleUpVote}
+            onUpVote={handleUpVoteClick}
             onNewReply={handleNewReply}
         />
     );

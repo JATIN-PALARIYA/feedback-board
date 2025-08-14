@@ -17,17 +17,17 @@ export async function POST(req) {
         }
 
         const user = new User({
-            username: name,        // Map 'name' from frontend to 'username' in database
+            username: name,       
             email: email,
-            passwordHash: password // Map 'password' from frontend to 'passwordHash' in database
+            passwordHash: password 
         });
 
-        await user.save(); // Fixed: was 'newUser.save()' but variable was named 'user'
+        await user.save();
 
         return new Response(JSON.stringify({
             message: 'User registered successfully',
             user: {
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 email: user.email
             }

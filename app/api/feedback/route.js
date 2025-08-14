@@ -58,7 +58,7 @@ export async function POST(request) {
         });
     } else {
         return new Response(JSON.stringify(result), {
-            status: 400, // or 500 depending on error type
+            status: 400,
             headers: { "Content-Type": "application/json" },
         });
     }

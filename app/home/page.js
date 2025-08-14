@@ -5,18 +5,18 @@ import Sidebar from '../components/Sidebar';
 import FeedbackListContainer from '../components/FeedbackListContainer';
 import FeedbackDetailsContainer from '../components/FeedbackDetailsContainer';
 import Footer from '../components/Footer';
-
 import useFeedback from '../hooks/useFeedback';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  // Filters and selected feedback state
+  const { user } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [currentView, setCurrentView] = useState('inbox');
   const [selectedFeedback, setSelectedFeedback] = useState(null);
 
-  // Use custom hook for feedback list fetching & state
   const {
     list: feedbackList,
     setList: setFeedbackList,
@@ -30,43 +30,67 @@ export default function Home() {
     'Authentication', 'Onboarding', 'Settings', 'Navigation', 'Forms', 'API',
   ];
 
-  // Select feedback for details view
   const handleFeedbackSelect = (feedback) => setSelectedFeedback(feedback);
 
-  // Handle upvote: update feedback list and selected feedback
-  async function handleUpVote(id) {
-    try {
-      const res = await fetch(`/api/feedback/${id}/upvote`, { method: 'PATCH' });
-      const json = await res.json();
+  async function handleUpVote(_id) {
+    if (!user) {
+      alert('Please log in to upvote.');
+      return;
+    }
+    if (user.isGuest) {
+      alert('Guests cannot upvote.');
+      return;
+    }
 
+    try {
+      const res = await fetch(`/api/feedback/${_id}/upvote`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, isGuest: user.isGuest }),
+      });
+
+      const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Upvote failed');
 
-      // Update list locally
       setFeedbackList(prev =>
-        prev.map(item => (item._id === id ? { ...item, upvotes: json.data.upvotes } : item))
+        prev.map(item =>
+          item._id === _id
+            ? {
+              ...item,
+              upvotes: json.data.upvotes,
+              hasUpvoted: json.alreadyUpvoted
+            }
+            : item
+        )
       );
 
-      // Update selected feedback if it's the one upvoted
-      if (selectedFeedback?._id === id) {
-        setSelectedFeedback(prev => ({ ...prev, upvotes: json.data.upvotes }));
+      if (selectedFeedback?._id === _id) {
+        setSelectedFeedback(prev => ({
+          ...prev,
+          upvotes: json.data.upvotes,
+          hasUpvoted: json.alreadyUpvoted
+        }));
       }
 
       return json.data;
     } catch (err) {
       console.error(err);
+      alert(err.message);
     }
   }
 
-  // Handle new reply: update comments count and replies in selected feedback & list
+
   function handleNewReply(newReplyObj, newRepliesCount) {
     if (!selectedFeedback?._id) return;
 
-    // Update comments count in feedback list
     setFeedbackList(prev =>
-      prev.map(fb => (fb._id === selectedFeedback._id ? { ...fb, comments: newRepliesCount } : fb))
+      prev.map(fb =>
+        fb._id === selectedFeedback._id
+          ? { ...fb, comments: newRepliesCount }
+          : fb
+      )
     );
 
-    // Update selected feedback replies and comments count
     setSelectedFeedback(prev => ({
       ...prev,
       comments: newRepliesCount,
@@ -74,7 +98,6 @@ export default function Home() {
     }));
   }
 
-  // Placeholder for new feedback creation (e.g. navigation)
   function handleCreateFeedback() {
     console.log('Create feedback clicked');
   }
@@ -101,7 +124,7 @@ export default function Home() {
             selectedFeedback={selectedFeedback}
             handleFeedbackSelect={handleFeedbackSelect}
             onUpVote={handleUpVote}
-            onCreateFeedback={handleCreateFeedback}
+            handleCreateFeedback={handleCreateFeedback}
           />
 
           <div className="flex-1 overflow-auto">
