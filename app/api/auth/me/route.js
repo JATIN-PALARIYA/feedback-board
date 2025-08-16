@@ -1,6 +1,6 @@
-import { verifyToken } from '../../../lib/jwt';
-import connectDB from '../../../lib/mongodb';
-import User from '../../../models/User';
+import { verifyToken } from '@/lib/jwt';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
 
 export async function GET(req) {
   await connectDB();

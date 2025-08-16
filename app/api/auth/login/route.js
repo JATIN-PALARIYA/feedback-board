@@ -1,6 +1,6 @@
-import connectDB from '../../../lib/mongodb';
-import User from '../../../models/User';
-import { signToken } from '../../../lib/auth';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+import { signToken } from '@/lib/auth';
 
 export async function POST(req) {
   await connectDB();

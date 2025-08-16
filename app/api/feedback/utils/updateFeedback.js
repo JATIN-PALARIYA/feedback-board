@@ -1,4 +1,4 @@
-import Feedback from "@/app/models/Feedback";
+import Feedback from "@/models/Feedback";
 
 export async function updateFeedback(id, updateData) {
     try {

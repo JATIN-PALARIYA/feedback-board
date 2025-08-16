@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext'; // <-- import AuthContext
 
 const initialTags = [
     'Bug', 'Feature Request', 'Improvement', 'UI', 'UX', 'Performance',
@@ -11,7 +12,9 @@ const initialTags = [
 ];
 
 export default function NewFeedbackForm() {
-    const router = useRouter()
+    const router = useRouter();
+    const { user } = useAuth(); // <-- get current user
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('Planned');
@@ -65,17 +68,16 @@ export default function NewFeedbackForm() {
                     description,
                     status,
                     tags: selectedTags,
-                    author: "Guest User"
+                    authorId: user?._id, // <-- send authorId from user
                 }),
             });
 
             const json = await res.json();
             if (res.ok && json.success) {
                 alert('Feedback created successfully!');
-                // Reset form or redirect as needed
                 setTitle('');
                 setDescription('');
-                setStatus('');
+                setStatus('Planned');
                 setSelectedTags([]);
                 router.push('/home');
             } else {
@@ -156,15 +158,13 @@ export default function NewFeedbackForm() {
                                     className={`cursor-pointer px-3 py-1 rounded-full border text-sm font-semibold
                     ${selected
                                             ? 'bg-primary text-white border-primary'
-                                            : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'}
-                  `}
+                                            : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'}`}
                                 >
                                     {tag}
                                 </button>
                             );
                         })}
 
-                        {/* Add Tag Button and Input */}
                         {showAddTagInput ? (
                             <div className="flex items-center space-x-2">
                                 <input

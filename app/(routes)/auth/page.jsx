@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import AuthForm from '../components/AuthForm';
-import { useAuth } from '../context/AuthContext';
+import AuthForm from '@/components/auth/AuthForm';
+import { useAuth } from '@/context/AuthContext';
 
 export default function AuthPage() {
     const router = useRouter();

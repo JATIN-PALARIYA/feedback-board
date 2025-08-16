@@ -1,5 +1,6 @@
-import connectDB from "@/app/lib/mongodb";
-import Feedback from "@/app/models/Feedback";
+import connectDB from "@/lib/mongodb";
+import Feedback from "@/models/Feedback";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req, context) {
@@ -7,16 +8,21 @@ export async function PATCH(req, context) {
         await connectDB();
 
         const { id: feedbackId } = await context.params;
-
-        // Parse JSON body safely
         const body = await req.json().catch(() => null);
-        const userId = body?.userId;
+        const userId = body?.authorId;
         const isGuest = body?.isGuest;
 
         if (!userId || isGuest) {
             return NextResponse.json(
                 { success: false, error: "Guests cannot upvote" },
                 { status: 403 }
+            );
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(feedbackId) || !mongoose.Types.ObjectId.isValid(userId)) {
+            return NextResponse.json(
+                { success: false, error: "Invalid feedbackId or userId" },
+                { status: 400 }
             );
         }
 
@@ -28,16 +34,19 @@ export async function PATCH(req, context) {
             );
         }
 
-        const alreadyUpvoted = feedback.upvotedBy.includes(userId);
+        // Check if user has already upvoted
+        const alreadyUpvoted = feedback.upvotedBy.some(
+            (id) => id.toString() === userId
+        );
 
         if (alreadyUpvoted) {
-            // toggle off
             feedback.upvotes = Math.max(0, feedback.upvotes - 1);
-            feedback.upvotedBy = feedback.upvotedBy.filter((id) => id !== userId);
+            feedback.upvotedBy = feedback.upvotedBy.filter(
+                (id) => id.toString() !== userId
+            );
         } else {
-            // toggle on
             feedback.upvotes += 1;
-            feedback.upvotedBy.push(userId);
+            feedback.upvotedBy.push(new mongoose.Types.ObjectId(userId));
         }
 
         await feedback.save();
@@ -48,9 +57,9 @@ export async function PATCH(req, context) {
                 data: {
                     _id: feedback._id.toString(),
                     upvotes: feedback.upvotes,
-                    upvotedBy: feedback.upvotedBy, 
+                    upvotedBy: feedback.upvotedBy,
                 },
-                hasUpvoted: !alreadyUpvoted, 
+                alreadyUpvoted: alreadyUpvoted,
             },
             { status: 200 }
         );

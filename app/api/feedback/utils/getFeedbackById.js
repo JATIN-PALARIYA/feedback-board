@@ -1,5 +1,5 @@
-import Feedback from "@/app/models/Feedback";
-import Reply from "@/app/models/Reply";
+import Feedback from "@/models/Feedback";
+import Reply from "@/models/Reply";
 
 export async function getFeedbackById(id) {
     try {

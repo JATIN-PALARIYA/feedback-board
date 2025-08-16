@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
-import Loader from './Loader';
+import Loader from '../ui/Loader';
 
 export default function AuthForm({ onAuthSuccess, onGuestLogin }) {
     const [isSignUp, setIsSignUp] = useState(true);

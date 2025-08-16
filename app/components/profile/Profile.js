@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Profile({ isOpen, onClose }) {
     const { user, logout, loading } = useAuth();

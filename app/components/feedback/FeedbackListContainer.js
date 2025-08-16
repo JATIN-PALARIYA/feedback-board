@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, User } from 'lucide-react';
 import FeedbackList from './FeedbackList';
-import AuthManager from './AuthManager';
-import { useAuth } from '../context/AuthContext';
-import Profile from './Profile';
+import AuthManager from '@/components/auth/AuthManager';
+import { useAuth } from '@/context/AuthContext';
+import Profile from '@/components/profile/Profile.js';
 
 export default function FeedbackListContainer({
     feedbackList = [],

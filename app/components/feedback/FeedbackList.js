@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MessageCircle, ArrowUp } from 'lucide-react';
-import { getStatusColor } from '../api/feedback/utils/statusColors';
+import { getStatusColor } from '@/api/feedback/utils/statusColors';
 
 export default function FeedbackList({
     feedback,
@@ -26,7 +26,6 @@ export default function FeedbackList({
                             onClick={() => onFeedbackSelect(item)}
                             className={`mb-3 p-4 rounded-xl cursor-pointer min-h-[140px] flex flex-col justify-around transition-all border
                 ${isSelected ? 'border-primary text-primary hover:bg-background' : 'text-foreground border-border hover:bg-muted'}`}
-
                         >
                             {/* Title + Status */}
                             <div className="flex justify-between items-start mb-2">
@@ -67,14 +66,14 @@ export default function FeedbackList({
                             {/* Footer */}
                             <div className="mt-4 flex justify-between items-center text-xs text-muted-foreground">
                                 <div>
-                                    {item.author} •{' '}
+                                    {item.authorId?.username || 'Unknown'} •{' '}
                                     {new Date(item.createdAt).toLocaleDateString('en-US', {
                                         day: 'numeric',
                                         month: 'short'
                                     })}
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    {/* Upvote count only */}
+                                    {/* Upvote count */}
                                     <div className="flex items-center gap-1 px-2 py-1 rounded text-primary">
                                         <ArrowUp className="h-3 w-3" />
                                         <span>{item.upvotes}</span>

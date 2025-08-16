@@ -24,8 +24,10 @@ export default function Sidebar({
 
   const menuItems = [
     { id: 'inbox', label: 'Inbox', icon: Inbox },
-    { id: 'archives', label: 'Archives', icon: Archive }
+    { id: 'my-feedbacks', label: 'My Feedbacks', icon: MessageSquare },
+    { id: 'following', label: 'Following', icon: Archive } 
   ];
+
 
   return (
     <div className="h-screen w-[15%] min-w-[200px] flex flex-col bg-sidebar border-r border-sidebar-border">

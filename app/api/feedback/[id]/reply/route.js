@@ -1,5 +1,6 @@
-import connectDB from "@/app/lib/mongodb";
-import Reply from "@/app/models/Reply";
+import connectDB from "@/lib/mongodb";
+import Reply from "@/models/Reply";
+import User from "@/models/User";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -7,8 +8,8 @@ export async function POST(request, { params }) {
     try {
         await connectDB();
 
-        const { id: feedbackId } = await params; 
-        const { message, parentReplyId, author } = await request.json();
+        const { id: feedbackId } = await params;
+        const { message, parentReplyId, authorId } = await request.json();
 
         if (!message) {
             return NextResponse.json(
@@ -17,14 +18,28 @@ export async function POST(request, { params }) {
             );
         }
 
+        if (!authorId) {
+            return NextResponse.json(
+                { success: false, error: "authorId is required" },
+                { status: 400 }
+            );
+        }
+
+        // Ensure authorId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(authorId)) {
+            return NextResponse.json(
+                { success: false, error: "Invalid authorId" },
+                { status: 400 }
+            );
+        }
+
         const reply = await Reply.create({
-            feedbackId,
+            feedbackId: new mongoose.Types.ObjectId(feedbackId),
             message,
-            parentReplyId: parentReplyId || null,
-            author
+            parentReplyId: parentReplyId ? new mongoose.Types.ObjectId(parentReplyId) : null,
+            authorId: new mongoose.Types.ObjectId(authorId),
         });
 
-        // Get updated replies count
         const repliesCount = await Reply.countDocuments({
             feedbackId: new mongoose.Types.ObjectId(feedbackId)
         });

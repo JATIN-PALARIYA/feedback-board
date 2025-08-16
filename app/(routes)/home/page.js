@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import FeedbackListContainer from '../components/FeedbackListContainer';
-import FeedbackDetailsContainer from '../components/FeedbackDetailsContainer';
-import Footer from '../components/Footer';
-import useFeedback from '../hooks/useFeedback';
-import ProtectedRoute from '../components/ProtectedRoute';
-import { useAuth } from '../context/AuthContext';
+import Sidebar from '@/components/layout/Sidebar';
+import FeedbackListContainer from '@/components/feedback/FeedbackListContainer';
+import FeedbackDetailsContainer from '@/components/feedback/FeedbackDetailsContainer';
+import Footer from '@/components/layout/Footer';
+import useFeedback from '@/hooks/useFeedback';
+import ProtectedRoute from '@/components/ui/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
   const { user } = useAuth();
@@ -46,7 +46,7 @@ export default function Home() {
       const res = await fetch(`/api/feedback/${_id}/upvote`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, isGuest: user.isGuest }),
+        body: JSON.stringify({ authorId: user.id, isGuest: user.isGuest }),
       });
 
       const json = await res.json();

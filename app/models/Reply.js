@@ -15,19 +15,19 @@ const ReplySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  author: {
-    type: String,
-    default: "Anonymous",
+  authorId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User", 
+    required: true 
   },
   upvotes: {
     type: Number,
     default: 0,
   },
-  upvotedBy: [
-    {
-      type: String, // store user ID or name if needed
-    },
-  ],
+  upvotedBy: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User" 
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

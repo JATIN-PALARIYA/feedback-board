@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, MessageCircle, User, Archive, Clock } from 'lucide-react';
-import { getStatusColor } from '../api/feedback/utils/statusColors';
-import Loader from './Loader';
-import { useAuth } from '../context/AuthContext';
+import { getStatusColor } from '@/api/feedback/utils/statusColors';
+import Loader from '@/components/ui/Loader';
+import { useAuth } from '@/context/AuthContext';
 
 export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply }) {
     const { user } = useAuth();
@@ -13,6 +13,20 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
     const [newReply, setNewReply] = useState('');
     const [loadingReply, setLoadingReply] = useState(false);
     const [loadingReplies, setLoadingReplies] = useState(false);
+
+    // Map replies whenever selectedFeedback changes
+    useEffect(() => {
+        if (!selectedFeedback) return;
+        setLoadingReplies(true);
+
+        const mappedReplies = (selectedFeedback.replies || []).map(reply => ({
+            ...reply,
+            authorName: reply.authorName || reply.authorId?.username || 'Anonymous'
+        }));
+
+        setReplies(mappedReplies);
+        setLoadingReplies(false);
+    }, [selectedFeedback]);
 
     if (!selectedFeedback) {
         return (
@@ -24,33 +38,28 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
 
     const hasUpvoted = !!(user && selectedFeedback?.upvotedBy?.includes(user.id));
 
-    useEffect(() => {
-        if (!selectedFeedback) return;
-        setLoadingReplies(true);
-        setTimeout(() => {
-            setReplies(selectedFeedback.replies || []);
-            setLoadingReplies(false);
-        }, 400);
-    }, [selectedFeedback]);
-
+    // Handle posting a new reply
     async function handleSubmitReply() {
         if (!newReply.trim()) return;
-
         setLoadingReply(true);
+
         try {
             const res = await fetch(`/api/feedback/${selectedFeedback._id}/reply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: newReply,
-                    author: user?.name || user?.username || 'Anonymous',
-                    createdAt: new Date().toISOString(),
+                    parentReplyId: null,
+                    authorId: user?.id,
                 }),
             });
 
             const json = await res.json();
             if (res.ok && json.success) {
-                const newReplyObj = json.data.reply;
+                const newReplyObj = {
+                    ...json.data.reply,
+                    authorName: user.username || 'Anonymous' // immediate display
+                };
                 setReplies(prev => [...prev, newReplyObj]);
                 setNewReply('');
                 onNewReply?.(newReplyObj, json.data.repliesCount);
@@ -66,24 +75,21 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
     }
 
     return (
-        <div className="flex flex-col h-full relative">
-            {/* Top Header */}
+        <div className="h-full flex flex-col">
+            {/* Header */}
             <div className="p-6 border-b border-border space-y-4">
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-medium text-foreground">{selectedFeedback.title}</h1>
                     <div className="flex items-center gap-3">
                         {selectedFeedback.status && (
                             <span
-                                className={`text-xs px-2 py-1 border rounded-md text-primary font-semibold ${getStatusColor(
-                                    selectedFeedback.status
-                                )}`}
+                                className={`text-xs px-2 py-1 border rounded-md text-primary font-semibold ${getStatusColor(selectedFeedback.status)}`}
                             >
                                 {selectedFeedback.status}
                             </span>
                         )}
                         <button className="text-sm px-3 py-1 rounded-md hover:bg-muted border border-primary transition text-primary font-semibold">
-                            <Archive className="w-4 h-4 inline mr-1" />
-                            Archive
+                            <Archive className="w-4 h-4 inline mr-1" /> Following
                         </button>
                     </div>
                 </div>
@@ -91,7 +97,7 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                 <div className="flex items-center gap-4 text-base text-muted-foreground">
                     <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
-                        <span>{selectedFeedback.author}</span>
+                        <span>{selectedFeedback.author?.username || 'Anonymous'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
@@ -124,29 +130,25 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                         disabled={!user || user.isGuest}
                         title={!user ? 'Log in to upvote' : user.isGuest ? 'Guests cannot upvote' : ''}
                     >
-                        <ArrowUp className="w-4 h-4" />
-                        {selectedFeedback.upvotes ?? 0}
+                        <ArrowUp className="w-4 h-4" /> {selectedFeedback.upvotes ?? 0}
                     </button>
 
                     <div className="flex items-center gap-1 text-sm text-primary">
-                        <MessageCircle className="w-4 h-4" />
-                        {replies.length} Replies
+                        <MessageCircle className="w-4 h-4" /> {replies.length} Replies
                     </div>
                 </div>
             </div>
 
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-auto pr-6 pb-48">
-                {/* Description */}
-                <div className="p-6 space-y-6">
+            {/* Description & Replies */}
+            <div className="flex-1 overflow-auto p-6 space-y-10">
+                <div>
                     <h2 className="text-xl font-medium mb-2">Description</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                         {selectedFeedback.description}
                     </p>
                 </div>
 
-                {/* Replies */}
-                <div className="p-6 space-y-6">
+                <div className="space-y-6">
                     <h2 className="text-lg font-medium">Discussion ({replies.length})</h2>
                     {loadingReplies ? (
                         <div className="flex justify-center py-6">
@@ -157,14 +159,14 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                     ) : (
                         replies.map((reply, index) => (
                             <div
-                                key={reply._id || index}
+                                key={reply._id || `${selectedFeedback._id}-reply-${index}`}
                                 className="border p-4 rounded-lg space-y-2"
                             >
                                 <div className="flex items-start gap-3">
                                     <User className="w-8 h-8 p-2 text-primary bg-muted rounded-full" />
                                     <div className="leading-[1.1]">
                                         <span className="block font-semibold text-primary">
-                                            {reply.author || 'Anonymous'}
+                                            {reply.authorName || 'Anonymous'}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {new Date(reply.createdAt || Date.now()).toLocaleDateString()}
@@ -176,34 +178,34 @@ export default function FeedbackDetails({ selectedFeedback, onUpVote, onNewReply
                         ))
                     )}
                 </div>
-            </div>
 
-            {/* Reply box / guest message */}
-            {user && !user.isGuest ? (
-                <div className="absolute bottom-0 left-0 w-full bg-background border-t border-border px-5 py-3">
-                    <label className="text-sm font-medium">Add a Reply</label>
-                    <textarea
-                        className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
-                        placeholder="Type your reply here..."
-                        value={newReply}
-                        onChange={(e) => setNewReply(e.target.value)}
-                    />
-                    <div className="flex justify-end mt-2">
-                        <button
-                            onClick={handleSubmitReply}
-                            disabled={loadingReply}
-                            className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition flex items-center gap-2"
-                        >
-                            {loadingReply && <Loader size={16} type="spinner" />}
-                            {loadingReply ? 'Posting...' : 'Post Reply'}
-                        </button>
+                {/* Reply box */}
+                {user && !user.isGuest ? (
+                    <div className="space-y-2 border border-border px-5 py-2 rounded-md">
+                        <label className="text-sm font-medium">Add a Reply</label>
+                        <textarea
+                            className="w-full h-20 p-2 mt-1 border bg-muted rounded-md resize-none text-sm text-foreground"
+                            placeholder="Type your reply here..."
+                            value={newReply}
+                            onChange={(e) => setNewReply(e.target.value)}
+                        />
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleSubmitReply}
+                                disabled={loadingReply}
+                                className="bg-primary mt-1 text-white px-4 py-1.5 rounded-md text-sm hover:opacity-90 transition flex items-center gap-2"
+                            >
+                                {loadingReply && <Loader size={16} type="spinner" />}
+                                {loadingReply ? 'Posting...' : 'Post Reply'}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            ) : (
-                <p className="absolute bottom-0 left-0 w-full bg-background text-sm text-primary font-semibold cursor-pointer text-center px-5 py-3 border-t border-primary">
-                    Please log in to upvote or reply.
-                </p>
-            )}
+                ) : (
+                    <p className="space-y-2 text-center border border-border px-5 py-3 rounded-md">
+                        Please log in to upvote or reply.
+                    </p>
+                )}
+            </div>
         </div>
     );
 }

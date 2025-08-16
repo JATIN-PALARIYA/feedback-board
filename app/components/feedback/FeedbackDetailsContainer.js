@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import FeedbackDetails from './FeedbackDetails';
-import Loader from './Loader';
+import Loader from '@/components/ui/Loader';
 
 export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpVote }) {
     const [data, setData] = useState(null);
@@ -25,7 +25,9 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
                 const res = await fetch(`/api/feedback/${feedbackId}`);
                 const json = await res.json();
                 if (!res.ok) throw new Error(json.error || 'Failed to fetch details');
+
                 if (mounted.current) {
+                    // Include populated replies with authorId
                     setData({ ...json.data.feedback, replies: json.data.replies });
                 }
             } catch (err) {
@@ -55,10 +57,8 @@ export default function FeedbackDetailsContainer({ feedbackId, onNewReply, onUpV
             comments: updatedRepliesCount,
         }));
 
-        // Call parent function to update feedbackList
         if (onNewReply) onNewReply(newReplyObj, updatedRepliesCount);
     };
-
 
     if (loading) return <div className="p-4"><Loader type="details" /></div>;
     if (error) return <p className="p-4 text-red-500">{error}</p>;
